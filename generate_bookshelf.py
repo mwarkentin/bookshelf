@@ -254,6 +254,7 @@ def generate_html(books, stats):
     w(f"  <a href=\"#section-read\" class=\"stat\"><span class=\"stat-num\">{stats['read']}</span><span class=\"stat-label\">Read</span></a>\n")
     w(f"  <a href=\"#section-unread\" class=\"stat\"><span class=\"stat-num\">{stats['unread']}</span><span class=\"stat-label\">To Read</span></a>\n")
     w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['total_pages']:,}</span><span class=\"stat-label\">Pages Read</span></div>\n")
+    w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['avg_duration']}</span><span class=\"stat-label\">Avg Days/Book</span></div>\n")
     w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['avg_pages_per_day']}</span><span class=\"stat-label\">Avg Pages/Day</span></div>\n")
     w("</section>\n\n")
 
