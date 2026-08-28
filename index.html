@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookshelf</title>
+<style>
+
+:root {
+  --bg: #fafaf9;
+  --fg: #1c1917;
+  --muted: #78716c;
+  --border: #e7e5e4;
+  --card-bg: #ffffff;
+  --accent: #292524;
+  --tag-bg: #f5f5f4;
+  --tag-fg: #57534e;
+  --link: #1d4ed8;
+  --stat-bg: #f5f5f4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1917;
+    --fg: #fafaf9;
+    --muted: #a8a29e;
+    --border: #292524;
+    --card-bg: #292524;
+    --accent: #e7e5e4;
+    --tag-bg: #44403c;
+    --tag-fg: #d6d3d1;
+    --link: #93b4fd;
+    --stat-bg: #292524;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.5;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header { margin-bottom: 2rem; }
+header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+
+/* Stats */
+.stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.stat {
+  background: var(--stat-bg);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+.stat-num { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Year chips */
+.year-bar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.year-chip {
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: var(--tag-bg);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* Sections */
+.book-section { margin-bottom: 2.5rem; }
+.book-section h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+.book-section h2 .count { color: var(--muted); font-weight: 400; }
+
+/* Grid */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Card */
+.book-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.book-cover {
+  flex-shrink: 0;
+  width: 64px;
+  height: 96px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--tag-bg);
+}
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.book-cover.no-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.book-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.book-title a { color: inherit; }
+.book-title a:hover { color: var(--link); }
+
+.book-subtitle { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+.book-author { font-size: 0.8rem; color: var(--muted); }
+.book-meta { font-size: 0.75rem; color: var(--muted); }
+.book-dates { font-size: 0.75rem; color: var(--muted); }
+
+.book-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem; }
+.tag {
+  font-size: 0.65rem;
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+footer {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .stats { gap: 0.5rem; }
+  .stat { min-width: 80px; padding: 0.5rem 0.75rem; }
+  .stat-num { font-size: 1.2rem; }
+  .book-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Bookshelf</h1>
+  <p class="subtitle">A personal reading log</p>
+</header>
+
+<section class="stats">
+  <div class="stat"><span class="stat-num">50</span><span class="stat-label">Read</span></div>
+  <div class="stat"><span class="stat-num">4</span><span class="stat-label">Reading</span></div>
+  <div class="stat"><span class="stat-num">53</span><span class="stat-label">To Read</span></div>
+  <div class="stat"><span class="stat-num">21,192</span><span class="stat-label">Pages Read</span></div>
+  <div class="stat"><span class="stat-num">10.7</span><span class="stat-label">Avg Days/Book</span></div>
+</section>
+
+<section class="year-bar">
+  <span class="year-chip">2026: 20 books</span>
+  <span class="year-chip">2025: 21 books</span>
+</section>
+
+<section class="book-section">
+  <h2>📖 Currently Reading <span class="count">(4)</span></h2>
+  <div class="book-grid">
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=dGo8EQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Xuy1yaub6f4SPSzC8zTFmxGIGX-DS8O14F9vLdoKIn1TSUYFWIbcPMeolgiWSQ7C4Pi0CXCBM88Nwrtiub_Ulqmg9E5oeSUnfE82KrtBkqbYLDjIdBO-0zC8-Cjb59mezA_31&amp;fife=w1000-h1000" alt="Slow Gods" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=dGo8EQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Slow Gods</a></h3>
+        <p class="book-author">Claire North</p>
+        <p class="book-meta">448 pp · Paperback</p>
+        <p class="book-dates">Started 2026-08-21</p>
+        <div class="book-tags">
+          <span class="tag">Alien Contact</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+          <span class="tag">Space Opera</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=HibzzQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71MhK5w72WSg6ezkH0ZWex6QjVOTUbSYOM-JXwn9eRkZ8N_P22i1EIIdkYsL2aOA0OlHTEwmUUAuJ9PiCoJ9gXIMlU0A1u0KO65R1CDmtut9c0RQWSvVG_pQ7ies8l73i5E_5Vn&amp;fife=w1000-h1000" alt="Increment Issue 11" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=HibzzQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 11</a></h3>
+        <p class="book-subtitle">Teams</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">112 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Started 2026-06-14</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=CQQGzgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72vtDSldAV9j6x1hzlrjL1wsIsURhpIfuRGPgkPSpLCWny6ApOqEjVRcx9OLpMUhDE-5MHHGDgMITrwegZwwCvogeoaxKXCvADDvSWa3lo2MsnKsc1pTr2E5w3fDg2tzBPKMj8x&amp;fife=w1000-h1000" alt="Increment Issue 10" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=CQQGzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 10</a></h3>
+        <p class="book-subtitle">Testing</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">112 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=8HAZAgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70_rDSSsWJ2kFVdrkkuXouiqN0KGzLSfpXSSk7YyJBwOfcuBHhf12KXhSk7GIzLXffgsuXcyUGj6KS2gR8DoqYGHjPhJ7JeIGo8_0Si5Qgs5aM0PweABfItSW2ItVFlpy-OGvB_&amp;fife=w1000-h1000" alt="Invincible Vol. 5" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=8HAZAgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Invincible Vol. 5</a></h3>
+        <p class="book-subtitle">The Facts of Life</p>
+        <p class="book-author">Robert Kirkman</p>
+        <p class="book-meta">168 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="book-section">
+  <h2>✅ Read <span class="count">(50)</span></h2>
+  <div class="book-grid">
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=oTU0DwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE723q9BjBoy_6rlpL2pFUgq2fowficXH7hJ0o1-MAeZp6UYCiBCJ_vInkLX3sMvW_FwqaRCTufaCgS-ifAoJMxDCBQyJbyigS-sifBxk3TS3DPdduNEMzTa0zlyxdMeCMCwymZOc&amp;fife=w1000-h1000" alt="Artificial Condition" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=oTU0DwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Artificial Condition</a></h3>
+        <p class="book-subtitle">The Murderbot Diaries</p>
+        <p class="book-author">Martha Wells</p>
+        <p class="book-meta">176 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-08-16 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Crime &amp; Mystery</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=ZSu2DQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72dQKIeTmCOcrpkt4wmTmsrTtQZ3vQS_2493mjGRP1cEdfqRG0rTzd0K2ZNF4mxTf6_DOxRcSulelWbPyfunrUEaFBbGB_CfIyBrt1THPlRV7Vd_ZqQ7ZvKxxDg0m6ba4V-ELrs&amp;fife=w1000-h1000" alt="All Systems Red" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=ZSu2DQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">All Systems Red</a></h3>
+        <p class="book-subtitle">The Murderbot Diaries</p>
+        <p class="book-author">Martha Wells</p>
+        <p class="book-meta">144 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-08-09 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Crime &amp; Mystery</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/15670353482210.jpg" alt="I Am Not a Robot - My Year Using AI to Do (Almost) Everything" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">I Am Not a Robot - My Year Using AI to Do (Almost) Everything</h3>
+        <p class="book-author">Joanna Stern</p>
+        <p class="book-meta">336 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-07-06 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Artificial Intelligence</span>
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Computers &amp; Information Technology</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/2082343482274.jpg" alt="A Parade of Horribles" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">A Parade of Horribles</h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">688 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-06-11 (13 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Apocalyptic &amp; Post-Apocalyptic</span>
+          <span class="tag">Dark Humor</span>
+          <span class="tag">Fantasy</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=syMDzgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73_BHQKLWm6X_XCrrR5OHFVwmSoxsAJnqEsA5xKKM9PknZnFNm2tLTKqmoczhGbM-D6A1GZlBq90IoS8OUbu882Cpk46aSle1hoIi4fnxUMTPFGeAP-i9Z-52JN2fdnoiCSNuGv&amp;fife=w1000-h1000" alt="Increment Issue 9" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=syMDzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 9</a></h3>
+        <p class="book-subtitle">Open Source</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">128 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-06-07 (28 days)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/6557953488674.jpg" alt="This Inevitable Ruin" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">This Inevitable Ruin</h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">880 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-05-21 (15 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Adventure</span>
+          <span class="tag">Crime &amp; Mystery</span>
+          <span class="tag">Fantasy</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=ZlD-zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73TXShdqT406VlsOGo1dfAhnnTs2QgtvlgyWe1RjmPvyrB3CstDNLQ1oK94UbX9yGhnqIYQEf0-TPTNdwI3kGtqW7nHyCUGHj1RkwzI90n2YQK2OHtetAHdjLusfISgGrPOTU9B&amp;fife=w1000-h1000" alt="Increment Issue 7" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=ZlD-zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 7</a></h3>
+        <p class="book-subtitle">Security</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">98 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-05-05 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=yXr_zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70FjY7IYKD_AZ4aJ6H9wzjC2TzlK7Rr68dAMqwMK42RjKbmOk66vedHRwF_1x1u1QU2q5F2WPWe-Oo2nc98dGQ2MX1Wr4yd1Rg8xRTqgpgIrkUQ_4T4srbgtwm5plMq3HasfAP9&amp;fife=w1000-h1000" alt="Increment Issue 6" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=yXr_zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 6</a></h3>
+        <p class="book-subtitle">Documentation</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">86 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-05-04 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=CtFt0QEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73m-3XQJTfPj7U1LdlPK_9DZ1JIaxmqJeLHvlL9m0qfgP3mNHctC5JMvSOq3yyvqUBS4EfzkUqfeBPcgiXiGfHyX08vqZ5heAnlgLufDIcz7PcS2678b7Dyo6z3teo4J7Jiv6NO&amp;fife=w1000-h1000" alt="The Faith of Beasts" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=CtFt0QEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Faith of Beasts</a></h3>
+        <p class="book-author">James S. A. Corey</p>
+        <p class="book-meta">436 pp · Captive’s War #2 · Hardcover, Paperback</p>
+        <p class="book-dates">Finished 2026-04-30 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Alien Contact</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=ydj-zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70OwCtNkbRwu4MsWsbyogVbhbY0aUEPLKdRjQmM0q0BooRdsQSBaHv4qSf0HiGOrB-v3GKKOqYY35eoGfN-vmjouyJtfbR53_3gJ1u1RgaxM5qJHl0-UQldFyU5qM4dSV0JVsLl&amp;fife=w1000-h1000" alt="Increment Issue 5" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=ydj-zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 5</a></h3>
+        <p class="book-subtitle">Programming Languages</p>
+        <p class="book-author">Susan Fowler, Sid Orlando</p>
+        <p class="book-meta">98 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-04-27 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=z2j4zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Uk7Y4L-7G1gkg70qdf9rUYjOX25uGCn7syYA3boE4ABkmW7R-QfRBQC3O9gLa6U6x3gfFoE7MQkkwBoer5Ptm6z5O4UdGsucyGqYF2jnHfM55EyXXeEZHiFOWgKp_KZU0HbK_&amp;fife=w1000-h1000" alt="Increment Issue 4" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=z2j4zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 4</a></h3>
+        <p class="book-subtitle">Energy &amp; Environment</p>
+        <p class="book-author">Susan Fowler, Sid Orlando</p>
+        <p class="book-meta">60 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-04-21 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=TSH7zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72zbATsxwUYeECRwbLgLSHF2iGmGBsOkXyh8nZO8XZVL4NLNhBQB47N0ksKRHwf1kNAlKUdKnjB4gDPFrHC0Pv0ppV2qRKH9vmexcqORkkBk1QD7xi-rGuUTWFrzdbNPttacYGy&amp;fife=w1000-h1000" alt="Increment Issue 2" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TSH7zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 2</a></h3>
+        <p class="book-subtitle">Cloud</p>
+        <p class="book-author">Susan Fowler</p>
+        <p class="book-meta">70 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-04-19 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=rFj3zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71moYHkr2clSHMd21ofSp1FejCW_cMEDlAy-tVGS26Rkzuv7rKjpAY2xNVt3tDUTwXaEYDWOndJkOhV6ms8s42aW42uAfoci5WhK-fLloTlOL0f9ZZme_VYdVYOZDG4HwaZhWL7&amp;fife=w1000-h1000" alt="Increment Issue 3" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=rFj3zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 3</a></h3>
+        <p class="book-subtitle">Development</p>
+        <p class="book-author">Susan Fowler, Sid Orlando</p>
+        <p class="book-meta">80 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2026-04-19 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/2012533482274.jpg" alt="The Eye of the Bedlam Bride" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">The Eye of the Bedlam Bride</h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">832 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-04-18 (10 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Apocalyptic &amp; Post-Apocalyptic</span>
+          <span class="tag">Dark Humor</span>
+          <span class="tag">Fantasy</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=vuYrEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE7166fxK6tS3CRVPQJR3XXCbVjyxsS2aiDqfe2aOS4f_-u3rQEaLro_ZEtF0Q6JOE4E7ktatJh4iVM8vBaErnfXOiPldPEFNVmtm5b8sl56iFFCbIM-SwqqEvW8oKSCa6qWTtW8r&amp;fife=w1000-h1000" alt="The Butcher&#x27;s Masquerade" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=vuYrEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Butcher&#x27;s Masquerade</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">720 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-04-05 (5 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">LitRPG (Literary Role-Playing Game)</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=5C9oEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Aw0Fo7SIXPAG5WNTactrvt3iYVm7MFYJKvk416aNQv2BedRtZGLSCO2OXsJBphGMMAPzgnfaKiE69JfL3SkeDXSvMU9ZcPtUdKl3Y2cY7QvC6zaD639jGpCfFSaoz4TtjiCJd&amp;fife=w1000-h1000" alt="The Gate of the Feral Gods" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=5C9oEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Gate of the Feral Gods</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">589 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-03-29 (3 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">LitRPG (Literary Role-Playing Game)</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/1764073482274.jpg" alt="Operation Bounce House" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">Operation Bounce House</h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">400 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-03-22 (16 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Humorous</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=iEiHEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73n1HHzNFyPeGDJN0NeAXCG209IYY_lnILCFufdIeOOl4ZXYIXG4ixRhWbVDcEmKX4GdS9gjocw4zACoy_bLAuvX4jQjPEUEOceoJzfVXcU0Q1UvnH-OkI3aIOvmxf4lvr6_2CW&amp;fife=w1000-h1000" alt="Project Hail Mary" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=iEiHEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Project Hail Mary</a></h3>
+        <p class="book-subtitle">A Novel</p>
+        <p class="book-author">Andy Weir</p>
+        <p class="book-meta">496 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-03-05 (8 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Hard Science Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=DOoCEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE703x37DeUytEfwJIpmoHHOXSwbjRRxyL2RW9TR_GKBSl710rgMAouE7CHQH3Pd1yoXz6oAVf8FyGIjNkOTfKtqC1UXqKdxBNLvVEJkQqdUdtHP0sRtJR4nBVJF7bxhZh4L67y0x&amp;fife=w1000-h1000" alt="The Dungeon Anarchist&#x27;s Cookbook" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=DOoCEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Dungeon Anarchist&#x27;s Cookbook</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">544 pp · Dungeon Crawler Carl · Paperback</p>
+        <p class="book-dates">Finished 2026-02-15 (13 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">LitRPG (Literary Role-Playing Game)</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=itmQEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72wfT8NnwfKskZQrOxaucDsQgOmaP8xMvSCNicxtCNHdeXtXLYBj5Ua94rKDDvJR0zZS2A028Kw837xYWq9hPEuFI1JJN2UsFbitjl9UlcgDDH9VgKtkH_6_BQXsXVeSpsgLGAE&amp;fife=w1000-h1000" alt="Supergirl: Woman of Tomorrow" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=itmQEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Supergirl: Woman of Tomorrow</a></h3>
+        <p class="book-author">Tom King</p>
+        <p class="book-meta">224 pp · Paperback</p>
+        <p class="book-dates">Finished 2026-01-28 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Science Fiction</span>
+          <span class="tag">Superheroes</span>
+          <span class="tag">Supervillains</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover no-cover"><span>CA</span></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=ehn0zgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Carl&#x27;s Doomsday Scenario</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">371 pp · Dungeon Crawler Carl #2 · Paperback</p>
+        <p class="book-dates">Finished 2025-12-28 (5 days)</p>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=CuoCEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72CK_MIVhznRM0q2OW5XFZEYXBj_n9TiwedTGuC8i4Hrg54_TLRLHd0BpfoNVZ9tTz3_AY0uDQSn8g-I3EdjS7Wx3kVUhKuQmtXC7bliax9854C5nw19UTELYdjJlHVwXwnRfyN&amp;fife=w1000-h1000" alt="Dungeon Crawler Carl" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=CuoCEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Dungeon Crawler Carl</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">464 pp · Paperback</p>
+        <p class="book-dates">Finished 2025-12-23 (4 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">LitRPG (Literary Role-Playing Game)</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=rGxMEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70EFrLYHt1MwLoRroqpMs0JenC76b0y_u9PIOBH09FVGEV3hvMp_SGnlwqgobyo2hWGdUbBATb7tLGVkMCPWhLTjTqz7k8jdJvLEsiO2ORAtnZH4aYZ9lHjMas-eFdmT-2spzQn&amp;fife=w1000-h1000" alt="There Is No Antimemetics Division" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=rGxMEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">There Is No Antimemetics Division</a></h3>
+        <p class="book-subtitle">A Novel</p>
+        <p class="book-author">qntm</p>
+        <p class="book-meta">288 pp · Audiobook</p>
+        <p class="book-dates">Finished 2025-11-28 (5 days)</p>
+        <div class="book-tags">
+          <span class="tag">Fiction</span>
+          <span class="tag">General</span>
+          <span class="tag">Hard Science Fiction</span>
+          <span class="tag">Horror</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=PTBQEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72SQtmpzF2D5lmu8SlII5D5pvWECnJwqT3xWhaQej8EvA5MNEyyYXvQqtacSOuNjEA5ovuMXqqUilDXtnp9gP5bNZxyyOtiMnKRB9WPZY1vQwgEp00FaDfRZIZVaZjuYNEvABKs&amp;fife=w1000-h1000" alt="The Lost Metal" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=PTBQEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Lost Metal</a></h3>
+        <p class="book-subtitle">A Mistborn Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">416 pp · Mistborn Age II #4 · Audiobook</p>
+        <p class="book-dates">Finished 2025-11-23 (21 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=TPNnBgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70GTBk_J_NZTo7oLCQNevKA8RMhRblEAu-s4vdHDOnDb514ROVs7XgPtUEI8VZfAI9W557nkRFX0RYM-hQfiUu3GgwgPlixcFTtLI7B_HjKKDEUqGoQakjppEqCFfBq0Wbte2zm&amp;fife=w1000-h1000" alt="The Bands of Mourning" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TPNnBgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Bands of Mourning</a></h3>
+        <p class="book-subtitle">A Mistborn Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">336 pp · Mistborn Age II #3 · Audiobook</p>
+        <p class="book-dates">Finished 2025-11-01 (15 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=BHHhBQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71EHKpuZ5EosmsA_L9U4TqF_rdGyzEnz7rfuMyXwbl4wPrlSLhg4cOdc_iMGif4rTt6NfYP0BDxMSRNfBILzEegBu13oK2J3tcwLowYw6tRhkAcHGjSc9mxBvJ7B_2heZehMq_S&amp;fife=w1000-h1000" alt="Shadows of Self" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=BHHhBQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Shadows of Self</a></h3>
+        <p class="book-subtitle">A Mistborn Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">384 pp · Mistborn Age II #2 · Paperback</p>
+        <p class="book-dates">Finished 2025-10-14 (11 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=Prj1iTmPJn4C&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71wHAuISnfDqDYqUFkagHgzw4i-aAveKyiNHvDWIjFzmjjtk2eX9T6qkoUJT01Ho1-FbtA8uT4q84rNVRO9sNHkE-Y0K9o6ApHlFBaOfhaL94DXy3IATr50E02Q9_LIfUR3lIqc&amp;fife=w1000-h1000" alt="Warbreaker" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=Prj1iTmPJn4C&amp;hl=&amp;source=gbs_api" rel="noopener">Warbreaker</a></h3>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">989 pp · Paperback</p>
+        <p class="book-dates">Finished 2025-09-26 (14 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=183iEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71IkWvFYyFWTX9M8Lop6n68y1Hv-BBmcOwlMpSZ2z7rPOLwBGVpZh-ZlSA61Nk90I5u51wd9uI73i6i72i_XQ1usBNx0k-VZ4nxi8VtCXLgBrYSMHIlT-iS9PxR9iQeRWZqAs8a&amp;fife=w1000-h1000" alt="The Mercy of Gods" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=183iEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Mercy of Gods</a></h3>
+        <p class="book-author">James S. A. Corey</p>
+        <p class="book-meta">432 pp · Captive’s War · Paperback</p>
+        <p class="book-dates">Finished 2025-09-12 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+          <span class="tag">Space Opera</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=N3AZAgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73xsHN5DY-TqChw2d10MbAu_jchWbaAOu3q_W1KMogYLNshACBe37aXNCjvAJaee1-qiJ_bg1RWH0j1jaEHucMhxGq8j5sadJfYwbyuw-XDPzPp1dQuX2aJzlEYPA75Z9pwm2J2&amp;fife=w1000-h1000" alt="Invincible Vol. 4" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=N3AZAgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Invincible Vol. 4</a></h3>
+        <p class="book-subtitle">Head of the Class</p>
+        <p class="book-author">Robert Kirkman</p>
+        <p class="book-meta">168 pp · Invincible · Paperback</p>
+        <p class="book-dates">Finished 2025-09-02 (37 days)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=EzSiEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72LO3bC7pSBlee0Z0CYFXFOujoOsc4hiM0FEwsBe9DPxhTicmkMADImQjeAO701qMEBDLiYwE1OVZF3MdJHyFjDEijUmnEqtEDO5UKFKqgi38mFA99VH-XxBirBSxJUJyqKEydf&amp;fife=w1000-h1000" alt="Tress of the Emerald Sea" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=EzSiEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Tress of the Emerald Sea</a></h3>
+        <p class="book-subtitle">A Cosmere Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">666 pp · Cosmere · Paperback</p>
+        <p class="book-dates">Finished 2025-08-30 (11 days)</p>
+        <div class="book-tags">
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Sea Stories</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=TjiYUm-47bQC&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71sZv5QKit0TXodSqUjxbaw83Hmpdb2_rzm77TMLQSoXBZ3Ra4zqRO9rMueB0GUqsLKxM-WqlI5aKz5623IURg3Ku30RCeQCr4fVYgsftHyt8TElTateY3bC9aI-x11lG68cdvi&amp;fife=w1000-h1000" alt="The Alloy of Law" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TjiYUm-47bQC&amp;hl=&amp;source=gbs_api" rel="noopener">The Alloy of Law</a></h3>
+        <p class="book-subtitle">A Mistborn Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">336 pp · Cosmere · Paperback, Audiobook</p>
+        <p class="book-dates">Finished 2025-08-18 (6 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=73CcCgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72AWx5F142cI18DW4pmc9PM2N3LRbSu5RlggYZCR8jXO2jeW9YE7XXfna59QHHUqeyYQF5_1gf35oRzDmyCaIQ4oEmPzu92CRIa6JHUz2FL0chC1j35vXG_sGHJEHlfKatzrQgD&amp;fife=w1000-h1000" alt="Elantris" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=73CcCgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Elantris</a></h3>
+        <p class="book-subtitle">Tenth Anniversary Author&#x27;s Definitive Edition</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">592 pp · Cosmere · Audiobook</p>
+        <p class="book-dates">Finished 2025-07-31 (18 days)</p>
+        <div class="book-tags">
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">General</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=5Wc6uwEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72C3-LK_anXCFsUAu6SfWARnzrdbJmu06-P9QPX51fRQ5_GUOiBHt_CV68V9ElJqwiBQDxw4qtefJmO9CHsfZkvN9JWr7G-6oknQJ0y3sOsuVg_Htw-TKmDidzgZ5GssYwM1CgB&amp;fife=w1000-h1000" alt="Edge Of Spidergeddon" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=5Wc6uwEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Edge Of Spidergeddon</a></h3>
+        <p class="book-author">Christos Gage, Jed MacKay</p>
+        <p class="book-meta">108 pp · Paperback</p>
+        <p class="book-dates">Finished 2025-07-27 (7 days)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Science Fiction</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=yG8ZAgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71ljFws9aChVZBLCoHYuAru0aevPTFnciT38lFeqWYoNc1hCQ2MdTuSEchyt6R9mdCU2FgroB4OFnUK9qy5PLKdsERRQx00DFS0k5_WQKja1AbEjoVoIvVfdHW5bhEcHF3xXLV4&amp;fife=w1000-h1000" alt="Invincible Vol. 3" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=yG8ZAgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Invincible Vol. 3</a></h3>
+        <p class="book-subtitle">Perfect Strangers</p>
+        <p class="book-author">Robert Kirkman</p>
+        <p class="book-meta">133 pp · Invincible · Paperback</p>
+        <p class="book-dates">Finished 2025-07-20 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=EnAZAgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71DkkxllwJ9ZCY4nuyDh9LtpUV9ZVjEQB27P9wm5_Bn92bo0ixC6Z64dLo7boJEK8yaw9W9pxkw-LrYDsZheKF42VvFMeuEfFHpmoT1EBYGR9ry3w8gxf5-Ldp95kzQCNbYRXCj&amp;fife=w1000-h1000" alt="Invincible Vol. 2" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=EnAZAgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Invincible Vol. 2</a></h3>
+        <p class="book-subtitle">Eight is Enough</p>
+        <p class="book-author">Robert Kirkman</p>
+        <p class="book-meta">128 pp · Invincible · Paperback</p>
+        <p class="book-dates">Finished 2025-07-13 (12 days)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=OozUDAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72CX3pyQlD--c2AkRMgXyZ-kxEcpgLf8gA04lRhkVrQxbSuHZOELBTN8ldgA6rHMIcoa-WdeUbVQYkf1FGZq9K9EMXQvD8d4-QDXQy8b4dA1dVA9tjLFo9cN3POySYDg39G0VAY&amp;fife=w1000-h1000" alt="Mistborn: Secret History" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=OozUDAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Mistborn: Secret History</a></h3>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">32 pp · Cosmere · Paperback</p>
+        <p class="book-dates">Finished 2025-07-08 (11 days)</p>
+        <div class="book-tags">
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=o28ZAgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72mx_K7zoe9jJ42dVeUbz88AcmrDpgg33cS9Ggs79XvG23xH5mKQ_WLvTzTphSkt4YDB2jKHG0HF6jBjhMkDAVNWQSXYrWKK3AOJVKRLuBNk8gxOuB3A4OWnPaJlDFLVHhEQ7BG&amp;fife=w1000-h1000" alt="Invincible Vol. 1" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=o28ZAgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Invincible Vol. 1</a></h3>
+        <p class="book-subtitle">Family Matters</p>
+        <p class="book-author">Robert Kirkman</p>
+        <p class="book-meta">123 pp · Invincible · Paperback</p>
+        <p class="book-dates">Finished 2025-07-01 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Comics &amp; Graphic Novels</span>
+          <span class="tag">Superheroes</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=GnAAzgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73dNciuodru28xfv5obY8q-NYsRN-Z99nNJ7myXwUxP8g4BIHlwfHLM4S-y8XQBaCQZTpsElliO1mIWul3c7qLAD1rwE6-IRZmnKEUhkb6EPCGi6MDqleb7AGl0xK3Aq-qHMNbw&amp;fife=w1000-h1000" alt="Increment Issue 1" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=GnAAzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 1</a></h3>
+        <p class="book-subtitle">On-Call</p>
+        <p class="book-author">Susan Fowler</p>
+        <p class="book-meta">42 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Finished 2025-06-23 (1 day)</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=uTt-H5MAGT0C&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73MO4Ufowo5fK_-qTDcFerrw8WY5nzWWRxouCfkeTDbYtnJlLC_zlMoj19E-v_LiaxlXG1fdkLBK_LqBKAP1Mvrpxgz8OMaTNSdnscQZmFc0G3qCF20iGUOPCZ2KWK4RiWsj9mN&amp;fife=w1000-h1000" alt="The Hero of Ages" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=uTt-H5MAGT0C&amp;hl=&amp;source=gbs_api" rel="noopener">The Hero of Ages</a></h3>
+        <p class="book-subtitle">Book Three of Mistborn</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">752 pp · Mistborn Era 1 · Paperback</p>
+        <p class="book-dates">Finished 2025-06-17 (11 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=Y-41Q9zk32kC&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73WATy1axHBR13YKqoT-ke5VpR2MJs-5voSW6StmJuuQ0YzUbeFQpmNdEcDmFlpw71AS4WI_kZW3O9I8weN6CI-y1uJYXlSw9GQgVRdT0VSsXlDFXQ9be9nMQo5XfLC4RXY8G1f&amp;fife=w1000-h1000" alt="The Well of Ascension" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=Y-41Q9zk32kC&amp;hl=&amp;source=gbs_api" rel="noopener">The Well of Ascension</a></h3>
+        <p class="book-subtitle">Book Two of Mistborn</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">785 pp · Mistborn Era 1 #2 · Paperback</p>
+        <p class="book-dates">Finished 2025-05-31 (18 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=t_ZYYXZq4RgC&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72EPz7o7ASyT3cKSNw-Xlk5hbuB3YbXRNvvIQct3dTT3jRC77JSFEe_InpiUSkW0LtRVVJrvf_YqcYiIdLBwm035jPCOzZrBB0h21ebOfyv9omozh5lWoudGwcGnHkmiupDTmaE&amp;fife=w1000-h1000" alt="Mistborn" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=t_ZYYXZq4RgC&amp;hl=&amp;source=gbs_api" rel="noopener">Mistborn</a></h3>
+        <p class="book-subtitle">The Final Empire</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">643 pp · Mistborn Era 1 · Paperback</p>
+        <p class="book-dates">Finished 2025-05-10 (76 days)</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=fQKNEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Ww1QHUpo3kUH4Vq4cjXUl24vDJYINX1t9waoS-NV9YJ-efLve1WJK4EGMBHlm561fOQcxu_v5bzuxGvIRtst8YAC9c7__NqGLKqBojFRD7HB2uTHD9_SgJm-xR8EN3DWq0qQx&amp;fife=w1000-h1000" alt="A Clash of Kings" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=fQKNEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">A Clash of Kings</a></h3>
+        <p class="book-subtitle">A Song of Ice and Fire: Book Two</p>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=tu2LDQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72zyFdPDvP_AiIxXGIrs9yS7CLGlmiSMt3vHya62V6J8h6OolETkeijZJyrcX_E1tpshcijjPuHmHzuKuzD4DfkL0weT9ItSm4cNrrZbOjwY9TM5IDwAAxZT2EJqNcZMVp0sVMZ&amp;fife=w1000-h1000" alt="A Dance with Dragons" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=tu2LDQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">A Dance with Dragons</a></h3>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">1040 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=Uj6FDwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73dz7aUSLo415OCJ7e23-_gSGbC3V8EYbyZLvIDSl7HeUaPuMhnVsQ6sRtafX39Up8WclS_S7NvE1lVOxWivHW9wCfmAkXxle5xcVZuwPR5qOkbGyNZvF3XAMbRMuJ98gqqb6Q7&amp;fife=w1000-h1000" alt="A Feast for Crows" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=Uj6FDwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">A Feast for Crows</a></h3>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">1104 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=zgCOEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71vCXRieLaZI3pBe83eDHr8V-ttZTB8iAyIxQ8vixwKTk5AvU9rRjv5E7Entx8O3QhhFa4Qj2YN4lRoWmAv01mIDULLvdC-z8rZkmsCqhbTELwO8L1I2TI8jOMfurLm8tLDX6h8&amp;fife=w1000-h1000" alt="A Game of Thrones" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=zgCOEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">A Game of Thrones</a></h3>
+        <p class="book-subtitle">A Song of Ice and Fire: Book One</p>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">720 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=bjn_DwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71O54VJuh0vTday3SwSv33JVyqdx_EIG8CimfLsqtEuULGxUNU6Kb__e0RmL9D2zkHBfGls9ZKJsuqc_GkJUygTgO12hoOoNHJY689Gp3y7fJpqtWP76qQj2p9WOs8ZXJV-8qGw&amp;fife=w1000-h1000" alt="A Storm of Swords" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=bjn_DwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">A Storm of Swords</a></h3>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">992 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=utyJDQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72bTd9vKYvH9HxZx8z7GO91csypc5lFU61yynp8DFMSqWabQns96KQ_7-EfoRtTH4iv6x7CaO92GxVZouD79jX8b4SyNbjH3LRaaV2XeaJZC1H5OgUaEsIdwe7rCcNjLJvyw2SH&amp;fife=w1000-h1000" alt="American Psycho" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=utyJDQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">American Psycho</a></h3>
+        <p class="book-author">Bret Easton Ellis</p>
+        <p class="book-meta">416 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Fiction</span>
+          <span class="tag">Horror</span>
+          <span class="tag">Literary</span>
+          <span class="tag">Satire</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=lohA2aY9gu0C&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73sic7_fjj8UT0wXoWGGs1dtskvdENi4OaesT6Qm9oQrNugx4Vww6_ajwzjqGxt2QgaC_MX-b0-gKhS1zcXP5oyTuVtLtxD1JOelCDDTIaa2ZFbS2PFMT-SUIZCbWlpP4Tp8FmM&amp;fife=w1000-h1000" alt="Code Complete" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=lohA2aY9gu0C&amp;hl=&amp;source=gbs_api" rel="noopener">Code Complete</a></h3>
+        <p class="book-subtitle">A Practical Handbook of Software Construction</p>
+        <p class="book-author">Steve McConnell</p>
+        <p class="book-meta">857 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Languages</span>
+          <span class="tag">Software Development &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=BM7woQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72TD9SIrS4f2Qc7nJF2V2nDq9m_zleThiM9vgIs3DS72t6CrVFLiNJr2a2no8PsaaVwmVT0fNyu6FgRdis08o1rQMfTEOoZJqofI9xgADOdvAek6VD149MIPH0bnjsjczlCeUzw&amp;fife=w1000-h1000" alt="Designing Data-intensive Applications" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=BM7woQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Designing Data-intensive Applications</a></h3>
+        <p class="book-subtitle">The Big Ideas Behind Reliable, Scalable, and Maintainable Systems</p>
+        <p class="book-author">Martin Kleppmann</p>
+        <p class="book-meta">590 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">Data Modeling &amp; Design</span>
+          <span class="tag">Databases</span>
+          <span class="tag">Desktop Applications</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=oNjnvQdYeFUC&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73y0gcpCjjXW6IpdQoVrIQQ-5dWaNi_Xp8IDzS7KaMOZgGHwmrFQ33DLNlciqaInEliArOW_DJR_t3CNRDzU60fAzV5-4XzMTcHM20UhePEh-d9Dd-pmmZ36-xZ75F3vcBczooe&amp;fife=w1000-h1000" alt="Time Management for System Administrators" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=oNjnvQdYeFUC&amp;hl=&amp;source=gbs_api" rel="noopener">Time Management for System Administrators</a></h3>
+        <p class="book-author">Tom Limoncelli</p>
+        <p class="book-meta">200 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Data Science</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="book-section">
+  <h2>📋 To Read <span class="count">(53)</span></h2>
+  <div class="book-grid">
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/3277203482633.jpg" alt="A Psalm for the Wild-Built A Monk and Robot Book" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">A Psalm for the Wild-Built A Monk and Robot Book</h3>
+        <p class="book-author">Becky Chambers</p>
+        <p class="book-meta">160 pp · Ebook</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Apocalyptic &amp; Post-Apocalyptic</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/17701743482300.jpg" alt="Age of Ash" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">Age of Ash</h3>
+        <p class="book-author">Daniel Abraham</p>
+        <p class="book-meta">448 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Dark Fantasy</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=SRnBEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70kZSi7PJvqt3uO2xTc9BXTwYvrl6111aO05L-5irApe0pI2hG9Ant6pAHcN9fJtg7aY6m370bz37_8EEp4bVV6zWl8J6FTqnE4n_DT7PyZN3ra6u14VnQYyp49RVqi37jr587T&amp;fife=w1000-h1000" alt="An Elegant Puzzle" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=SRnBEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">An Elegant Puzzle</a></h3>
+        <p class="book-subtitle">Systems of Engineering Management</p>
+        <p class="book-author">Will Larson</p>
+        <p class="book-meta">288 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Computers &amp; Information Technology</span>
+          <span class="tag">Decision-Making &amp; Problem Solving</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=a8KtDgAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72EnpLlFkm6gdadMMAsFtHJ98RysM3Hhb_qTeTHHwsm2prkLUWJZDC_QQQgihOhfUTG8lulldkRtVg6PLG_gMWZnstnnO-Nl_-X43aaeVPyuITIugp_wndRRQpXUbkGCER6C_zO&amp;fife=w1000-h1000" alt="Artemis" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=a8KtDgAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Artemis</a></h3>
+        <p class="book-subtitle">A Novel</p>
+        <p class="book-author">Andy Weir</p>
+        <p class="book-meta">352 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Hard Science Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=XfFvDwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE739DEqL-EQkCs0fW9frKKIoQFurlyQGLtRGwvzr-OElJ03ig_QXgsMD-_NKdiFQDaTs7dGgkL6H6LG02symHT1hKXT3PjR9ECjO4ZXvJLVKGGVExrWO722FWSyuqg5KxlRCo6xK&amp;fife=w1000-h1000" alt="Atomic Habits" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=XfFvDwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Atomic Habits</a></h3>
+        <p class="book-subtitle">An Easy &amp; Proven Way to Build Good Habits &amp; Break Bad Ones</p>
+        <p class="book-author">James Clear</p>
+        <p class="book-meta">320 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">General</span>
+          <span class="tag">Organizational Behavior</span>
+          <span class="tag">Personal Growth</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/12828463488900.jpg" alt="Blood Over Bright Haven" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">Blood Over Bright Haven</h3>
+        <p class="book-author">M. L. Wang</p>
+        <p class="book-meta">517 pp · Hardcover</p>
+        <div class="book-tags">
+          <span class="tag">Fantasy</span>
+          <span class="tag">Gaslamp</span>
+          <span class="tag">Genre Fiction</span>
+          <span class="tag">Horror</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=MTClswEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE712ZxIuwJV2ilR73XgmO5l2bWgrj91931bQlV_B44LV-J2N2bnUlzUoGPQegJ8YrMrfpvX6qn1MrdtkIGFHZ4hgTixo_Br51OADIGqnS80vQrGZG1PQ4tiRdwuEob9v-JV3hbjP&amp;fife=w1000-h1000" alt="Building Microservices" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=MTClswEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Building Microservices</a></h3>
+        <p class="book-subtitle">Designing Fine-grained Systems</p>
+        <p class="book-author">Sam Newman</p>
+        <p class="book-meta">586 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Productivity Software</span>
+          <span class="tag">Computer Architecture</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=XSqfzwEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70TqIpf_CyC9stf2PxQ6uVm-2PyZ-lp1u52esSKh837eqtnZFU2aQgXM6VwGnm3aN9MtyOpOfNV9GcpVGo2hEBZ0lOvU1gkEsMTixV9RE79vSrH5eIIy_aDUkA2xTiBqZ2jh1SF&amp;fife=w1000-h1000" alt="Building Modern CLI Applications in Go" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=XSqfzwEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Building Modern CLI Applications in Go</a></h3>
+        <p class="book-subtitle">Develop Next-Level CLIs to Improve User Experience, Increase Platform Usage, and Maximize Production</p>
+        <p class="book-author">Marian Montagnino</p>
+        <p class="book-meta">406 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Productivity Software</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Desktop Applications</span>
+          <span class="tag">General</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/19046233482300.jpg" alt="CIRCE" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">CIRCE</h3>
+        <p class="book-author">Madeline Miller</p>
+        <p class="book-meta">416 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Ancient</span>
+          <span class="tag">Classics</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Historical</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=TRBGrgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72HIg0sQ2FsK2Xtvg_lGARb_QnGFQoMt6DJ1_7MhVVHVxM3LJAAvjXpX50UFGRwWmXGtqbhrmaVtUQY0h4y--f0QlKu8yRMakSzKqtN_wq3y_Tf-fRfc3_57Sr-ON9_Mh28sni6&amp;fife=w1000-h1000" alt="Database Reliability Engineering" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TRBGrgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Database Reliability Engineering</a></h3>
+        <p class="book-subtitle">Designing and Operating Resilient Database Systems</p>
+        <p class="book-author">Laine Campbell, Charity Majors</p>
+        <p class="book-meta">271 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Data Science</span>
+          <span class="tag">Data Warehousing</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=4QTzCAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70SzKAOycNezuq9aYnOaVeIpOUgQU_LidrGWSPGePL5VMFXv8D_NbkiHWYLsU1A3-A_Ii9Pk5XPjtEFBRVsY5seQjavgwfWjqt993yOZ-CoUvJ5YCvyl89NP2Z9yczENxX-gnvv&amp;fife=w1000-h1000" alt="Deep Work" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=4QTzCAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Deep Work</a></h3>
+        <p class="book-subtitle">Rules for Focused Success in a Distracted World</p>
+        <p class="book-author">Cal Newport</p>
+        <p class="book-meta">288 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Personal Growth</span>
+          <span class="tag">Self-Help</span>
+          <span class="tag">Self-Management</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=JY4OEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72QhgRK0W6cKbHnAmqvZTeydBIcXmCmosyC5uhK9bGPrjsw93dDXJdxXGLaQpjr047jMBCgyK0Z1SPHuwSXFUnls5nIIl9BLfAIhVYa114-C5YIa_wgSzQYfsboYZPuZCTcdBT0&amp;fife=w1000-h1000" alt="Elder Race" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=JY4OEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Elder Race</a></h3>
+        <p class="book-author">Adrian Tchaikovsky</p>
+        <p class="book-meta">176 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Alien Contact</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=YFWJEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71NRD9vb-Kps8h3AHG_WuJm2jlVm-iUJBRMvnR9d7uv5vlP6GpdRnlPPH9eezHY1eFFsYfwIhTZmCChmcxs8ZWOD1U9GKzv4JjNuIRdyEYugnTzuZSfUG6T_L4icQqejYctSdWb&amp;fife=w1000-h1000" alt="Empire of Silence" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=YFWJEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Empire of Silence</a></h3>
+        <p class="book-subtitle">The Sun Eater: Book One</p>
+        <p class="book-author">Christopher Ruocchio</p>
+        <p class="book-meta">624 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Alien Contact</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1745430964l/222376640._SX98_.jpg" alt="Enshittification: Why Everything Suddenly Got Worse and What to Do About It" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="https://www.goodreads.com/book/show/222376640-enshittification" rel="noopener">Enshittification: Why Everything Suddenly Got Worse and What to Do About It</a></h3>
+        <p class="book-author">Cory Doctorow</p>
+        <p class="book-meta">Paperback</p>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=MTZ8DwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE721SgrRryT40217GdCrFAo5KclqoLElv-prMDMF32Bl332ZWN3MPmrRzj9LxG_X3JBAv4_HxdCkfRL_H0CBQnHH8Gelp2u-tyRTKBEJdnmRuMYu6B6RChm3QnuPHcLrt9bXJ2gl&amp;fife=w1000-h1000" alt="Fire &amp; Blood" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=MTZ8DwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Fire &amp; Blood</a></h3>
+        <p class="book-subtitle">300 Years Before A Game of Thrones</p>
+        <p class="book-author">George R. R. Martin</p>
+        <p class="book-meta">736 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Dragons &amp; Mythical Creatures</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=TPxl0AEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72KlLoDpYq-ny2c4looZRR0G4Rt856v4sbl44inRpHp_Rfp9Uzz_utH9YZ89awcWKAwqSODNoQMgCVhpQ_g9nf83c2TAreeAv4mlQqNMlaoR8Gc3qDe7AflquvYEfYpMF0dbn8V&amp;fife=w1000-h1000" alt="Game of Thrones: a to Z Guide and Trivia Deck" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TPxl0AEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Game of Thrones: a to Z Guide and Trivia Deck</a></h3>
+        <p class="book-author">Jim McDermott</p>
+        <p class="book-meta">88 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Antiques &amp; Collectibles</span>
+          <span class="tag">Games &amp; Activities</span>
+          <span class="tag">Genres</span>
+          <span class="tag">Performing Arts</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=GJxhzQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70wKT_roYkxtRznIHScpSx1h7ecHn-66pSicvx3iEHO_DAWqTK1JQB3Llq5LBvyBhu6iaV8PZVIfsT3DYm1Wtxy4HoytPLqFtF_06YtCNxtmSXcTW-ht-Di4ArfpD2VTSXj2wMm&amp;fife=w1000-h1000" alt="Implementing Service Level Objectives" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=GJxhzQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Implementing Service Level Objectives</a></h3>
+        <p class="book-subtitle">A Practical Guide to SLIs, SLOs, and Error Budgets</p>
+        <p class="book-author">Alex Hidalgo</p>
+        <p class="book-meta">375 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Backup &amp; Recovery</span>
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Commerce</span>
+          <span class="tag">Computer Science</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=uP0FzgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71YNTB1qHOzL-TVW9oEL5I7ZQlg8vY7HxTUsoOIu7luLN-G6wSirv_JDv75eHEmEN9jxMDpxQHSRhmtIqq44AZs0YQ8S6EtdCu9nwJ2UWWEY6Rr0o4_QoK1rWNDfJjIY3V67WCJ&amp;fife=w1000-h1000" alt="Increment Issue 12" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=uP0FzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 12</a></h3>
+        <p class="book-subtitle">Software Architecture</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">112 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=YlD_zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70WOSPYAHNqXa4DE4URZ30RsOzk_FrRSHeE5Sj73u0lXGejihT_cEpc9kB9grDb2TLrAzRe5_OjOv8X_cHnDsw7fMmznGEBUZa9DTF9iAWH_7RCkTYkepfwMfPF10MjEFDRgp31&amp;fife=w1000-h1000" alt="Increment Issue 13" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=YlD_zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 13</a></h3>
+        <p class="book-subtitle">Frontend</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">120 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=MY33zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73NpjdPiHu-7Fcj1i1HB68RhSuaUxfeVZlwvtT6E53C5Li04yoIZzMoVYT4YYtYQ0_VNepFw9lM03hU2-dIvuo2BXX7h2XH1UJ5W5CiCCOD_G2g4n77TSAd_d7IZyHxjn3a69aJ&amp;fife=w1000-h1000" alt="Increment Issue 14" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=MY33zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 14</a></h3>
+        <p class="book-subtitle">APIs</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">96 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=e2D8zQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71bxWdZ7s1AlGXW5rNMeTVeGR-5mGMbZN5tVLN4HmOK87X8-sNEV9jS4xMYAgXkAcFjhoO5_LCFptFo8LyNnnn6IfIISIWXSzdihH7ePdLvSKCNQacC2lv80YpCK8SRAvnuMV2R&amp;fife=w1000-h1000" alt="Increment Issue 15" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=e2D8zQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 15</a></h3>
+        <p class="book-subtitle">Remote</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">104 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=Vn1ezgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70eZhkthyXC6C6DGWmWjWoDfRyPg2tPkh1jSjP0TBFtuKjUcbobOukpmv2kw4Fpd2TtP8YEHEPqPA-3JaqB_KxOnzmRJOislYC8FfwYq8yDB2c-lnFxbPnCQgZ37JjPnppaa4Ub&amp;fife=w1000-h1000" alt="Increment Issue 16" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=Vn1ezgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 16</a></h3>
+        <p class="book-subtitle">Reliability</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover no-cover"><span>IN</span></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=PB1jzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 17</a></h3>
+        <p class="book-subtitle">Containers</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=-91_zgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE725znL-1dqZFKrWucL4OaTY7xTyzpGRXp36V4ak11dXykQGZD9dQM3S7W0RZc6WGHYjzOH5wwchZzFx1GFt98j5DEIr_GGtrn1SupTU8vSWkw7GHiX9l4y3MOYio4vgOkY-tXEW&amp;fife=w1000-h1000" alt="Increment Issue 18" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=-91_zgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 18</a></h3>
+        <p class="book-subtitle">Mobile</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">104 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover no-cover"><span>IN</span></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=AX-czgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 19</a></h3>
+        <p class="book-subtitle">Planning</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=8JYBzgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72vJLGt7zfbw-pbZOJiBV_JMxm_6SdUnES83g3sqjTOsgFj4vfIBuwzn5jAvHYO-Jbyra3imAPmQIFrMk_mepfuiS6dhUpX_WmoCwh_QrOii8vWMuQbBcxSafnD47-mu287mN3T&amp;fife=w1000-h1000" alt="Increment Issue 8" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=8JYBzgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Increment Issue 8</a></h3>
+        <p class="book-subtitle">Internationalization</p>
+        <p class="book-author">Sid Orlando</p>
+        <p class="book-meta">98 pp · Increment by Stripe · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/19209553482773.jpg" alt="Inverting the Pyramid The History of Soccer Tactics" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">Inverting the Pyramid The History of Soccer Tactics</h3>
+        <p class="book-author">Jonathan Wilson</p>
+        <p class="book-meta">528 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Coaching</span>
+          <span class="tag">History</span>
+          <span class="tag">Reference</span>
+          <span class="tag">Soccer</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=UHNangEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71Ks6L9dMlLwc1s9TN1X9DjJ3-GPt8vuxSjPQeA31Q3ufnj1MavNl55AMu0rw2nw36GjFyw60c9glRm6cqeE7BSCje30lIMXgiGgi7T1KeiKZB9_ezGLhlptzW0_nPKG4NwavG0&amp;fife=w1000-h1000" alt="Long Walk to Freedom" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=UHNangEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Long Walk to Freedom</a></h3>
+        <p class="book-subtitle">The Autobiography of Nelson Mandela</p>
+        <p class="book-author">Nelson Mandela</p>
+        <p class="book-meta">656 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Africa</span>
+          <span class="tag">Biography &amp; Autobiography</span>
+          <span class="tag">Historical</span>
+          <span class="tag">History</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=AELnEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70WCK6XswvMNloGVB7jCaLI8nI2veyF6HgxGbfTUsuuBbEDguEKpQ9ATz3rtY-qv32NmmGIRlwr9gCZfMk4G_RI3LUyhYq8uzaPJK2Mv8oElQJpBKBwzTx_gI4z8oMNOtC9kvjq&amp;fife=w1000-h1000" alt="Mistborn: The Wax &amp; Wayne Series" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=AELnEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Mistborn: The Wax &amp; Wayne Series</a></h3>
+        <p class="book-subtitle">Alloy of Law, Shadows of Self, Bands of Mourning, The Lost Metal</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">1472 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=8m7TEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72oTH8GKDWHYhgpWLLX719OW2ncIhmZcacdbOD2l-1bZgWEEnFM3fBWtzDW7a4gDd8jdVhmGI4JGAcAR40sDMfDYtNMkcMR9r0oH3LDoF8k8uWJcmCUARXb4DKR-xjBW54E3Wld&amp;fife=w1000-h1000" alt="Moonbound" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=8m7TEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Moonbound</a></h3>
+        <p class="book-subtitle">A Novel</p>
+        <p class="book-author">Robin Sloan</p>
+        <p class="book-meta">432 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=4hUcAwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70-oUAUWXk9t88HGqGFFcOVdhzISyMAv6MUWnUKH9mpT2Eui7et6t1DAZA84Y5k_S69G_Rz4tK4AE4yidpyZ9d7h2oElGQfIiQQWiEH3vl-x06MsEbtMMt1eRG-j3q4wO8O1kKj&amp;fife=w1000-h1000" alt="North" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=4hUcAwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">North</a></h3>
+        <p class="book-subtitle">The New Nordic Cuisine of Iceland [A Cookbook]</p>
+        <p class="book-author">Jody Eddy, Gunnar Karl Gíslason</p>
+        <p class="book-meta">352 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Cooking</span>
+          <span class="tag">Europe</span>
+          <span class="tag">Iceland &amp; Greenland</span>
+          <span class="tag">Methods</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=TVQUAAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71zNT8u61OBU8o1dGi5ZpxHYEo6UBDGSjy--dcGZ9b4NlQqFc4IBWI3VJSNowFdM2CrNQ68JfMk8Ph95u7FFuBWerEnGboffPs2b2omdKpWHx4jKNyyjdW0nVXeLuqfGpqu_Vhk&amp;fife=w1000-h1000" alt="Peopleware" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=TVQUAAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Peopleware</a></h3>
+        <p class="book-subtitle">Productive Projects and Teams</p>
+        <p class="book-author">Tom DeMarco, Tim Lister</p>
+        <p class="book-meta">272 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Software Development &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=1bMyEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Wr98_V1Gf0PwCv877GFj38x5fRvNnYRglHYd6BPMeGa5GO2-2jjSjbRkDon1VTWw-sviQLfdnakqDQA3Lbeo-NFNXENSPeB7pskajSJ1zdzKaL9Ky0B9IOnqE8b9EJsYYA3tM&amp;fife=w1000-h1000" alt="Piranesi" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=1bMyEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Piranesi</a></h3>
+        <p class="book-author">Susanna Clarke</p>
+        <p class="book-meta">245 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Dark Fantasy</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=2_x5xgEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70LSSnn_vkFF09ab8QwNRnu8zA1HPF-yLzc4g8MMEm7Oi8EYNSmBPbRzreNkWg0ZHHgUpgut5jbXC1GbJJzxQA31RTqG_YIo2zBXqOkccy-6_y3obF-1H15-N-lzsLlV-HZdrRr&amp;fife=w1000-h1000" alt="Powerful Command-Line Applications in Go" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=2_x5xgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Powerful Command-Line Applications in Go</a></h3>
+        <p class="book-subtitle">Build Fast and Maintainable Tools</p>
+        <p class="book-author">Ricardo Gerardi</p>
+        <p class="book-meta">475 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Internet</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=-m5vzAEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE713BVPfdhkH97434o4DlJr6urRLaedM9kzVcJ54NMDhTffXiSQqXomFKtDoT7YSWwShI44gV7vkzvp5S0pTBp_0KNLhiFuJsUcuwX5iKrWw4wRirE399VN6rjwdYm0mlrSgVqlw&amp;fife=w1000-h1000" alt="Primordial Landscapes" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=-m5vzAEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Primordial Landscapes</a></h3>
+        <p class="book-subtitle">Iceland Revealed</p>
+        <p class="book-author">Ari Trausti Gundmundsson, Feodor Pitcairn</p>
+        <p class="book-meta">256 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">General</span>
+          <span class="tag">Photography</span>
+          <span class="tag">Travel</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=-Z7ZAQAACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70pyI48wQciZN1nSmjrhLKaqGJl11EEOpw79I9IDt0UEr4ydhBhqctO0QI_O_v1B2OiZdRnT4ZD2H-SpxBCqta2EBg-Y8QfaaW2o3O7YyZ4YCpO-0WTWy9PNIXBJ-jrprdC_FsS&amp;fife=w1000-h1000" alt="Securing DevOps" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=-Z7ZAQAACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Securing DevOps</a></h3>
+        <p class="book-subtitle">Security in the Cloud</p>
+        <p class="book-author">Julien Vehent</p>
+        <p class="book-meta">384 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Internet</span>
+          <span class="tag">Linux &amp; UNIX Administration</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=yzuWtAEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71e86CKeI3LWY2Gn4wFfJXR9XQLcsk32qKYmI8ITDJe63Q_PztsKbiuvZsarX-4aCNCmcpnFxkU3tu-BreVRrUvDqi-v5VM5bDZLRjM5kYmQdfu3RGB2qBHkWsFXkujEAo9vV7g&amp;fife=w1000-h1000" alt="Seeking SRE" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=yzuWtAEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Seeking SRE</a></h3>
+        <p class="book-subtitle">Conversations about Running Production Systems at Scale</p>
+        <p class="book-author">David N. Blank-Edelman</p>
+        <p class="book-meta">576 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Backup &amp; Recovery</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Database Administration &amp; Management</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=81UrjwEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE73Te7tjHlkPq1lchp-fkQQ9sLPsiQ7Clzz1h6wRPPG05QnheihbOXcuULwTZoEOUWjQ5Hla_DhDd25pa16VCbbYv-YX0TcpAC-WnzlNRrpqGd-bBW5Es7r5cYW_iNZIw46exPEu&amp;fife=w1000-h1000" alt="Site Reliability Engineering" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=81UrjwEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Site Reliability Engineering</a></h3>
+        <p class="book-subtitle">How Google Runs Production Systems</p>
+        <p class="book-author">Betsy Beyer, Chris Jones, Niall Richard Murphy, Jennifer Petoff</p>
+        <p class="book-meta">524 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Backup &amp; Recovery</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Distributed Systems</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover no-cover"><span>ST</span></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=1-M0zgEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Staff Engineer</a></h3>
+        <p class="book-subtitle">Leadership Beyond the Management Track</p>
+        <p class="book-author">Will Larson (Software engineer)</p>
+        <p class="book-meta">370 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=cAK6jwEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70WtHOsJYbkV8bIJqMYcS7UnOaA42Il20eFm9YR5g0abbTu6xHnvDa42hVKmYc0cTCgxRlT_ULLrPOoJ_27frTDaArSzeaJyGbYRbm6zeeb3FWme70zm6pBeSRRpexhMZL10Xil&amp;fife=w1000-h1000" alt="The Art of Capacity Planning" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=cAK6jwEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Art of Capacity Planning</a></h3>
+        <p class="book-subtitle">Scaling Web Resources in the Cloud</p>
+        <p class="book-author">John Allspaw, Arun Kejariwal</p>
+        <p class="book-meta">217 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Backup &amp; Recovery</span>
+          <span class="tag">Computer Literacy</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=nI5UEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70g9gQ3phvQfI4CF3BeCwnnoMIq56_Yt06UOvblcpboFhVBR58VKcrIEWV59mzge59H148wxeaz3IW4Fx-jhMj1Q7GojgH4-MFanee-It9-xF5d9hWAoykBuDYr9dK1aepc1CPU&amp;fife=w1000-h1000" alt="The Bright Sword" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=nI5UEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Bright Sword</a></h3>
+        <p class="book-subtitle">A Novel of King Arthur</p>
+        <p class="book-author">Lev Grossman</p>
+        <p class="book-meta">688 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Historical</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/15607203482353.jpg" alt="The Design of Everyday Things" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">The Design of Everyday Things</h3>
+        <p class="book-author">Donald A. Norman</p>
+        <p class="book-meta">288 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Design, Industrial -- Psychological aspects</span>
+          <span class="tag">Human engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=0rhmEQAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72bNIC9F47wpPOGA2ITUy6TM9mNrqbEGKLwuUKTqrWR01t4Xeqex2Z4DzGMGKgBdkDXTrf9Lw0q6foUc09r9_2ctx8SB85Q9dUIqegpHz9ammsFU2HC8ER3qwToqTzsL66MFpto&amp;fife=w1000-h1000" alt="The Dungeon Anarchist&#x27;s Cookbook" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=0rhmEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Dungeon Anarchist&#x27;s Cookbook</a></h3>
+        <p class="book-author">Matt Dinniman</p>
+        <p class="book-meta">784 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">LitRPG (Literary Role-Playing Game)</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/25526003482773.jpg" alt="The Iron Garden Sutra" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">The Iron Garden Sutra</h3>
+        <p class="book-author">A.D. Sui</p>
+        <p class="book-meta">384 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Literary</span>
+          <span class="tag">Science Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=xeUpMQAACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE705ihrhyPUiV6UB3SbyyckPh44wiJENSBE9dEnlWUmpehkPb73Mi-um8LZsAkKtCW1ASATigsHKk-rdkvbJNAly2X3-XAEbPIOpmYusIRC9cOypaR5vZ0J4i-hZNUB3Q-H2Cm6N&amp;fife=w1000-h1000" alt="The Manager&#x27;s Path" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=xeUpMQAACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Manager&#x27;s Path</a></h3>
+        <p class="book-subtitle">A Guide for Tech Leaders Navigating Growth and Change</p>
+        <p class="book-author">Camille Fournier</p>
+        <p class="book-meta">226 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Business &amp; Economics</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=nJyTEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE712moEluT1WeDd9thQQWrylZPLH4iVB-Bmz_SN9KbnBX4Ln1DkPUg5tg3Wb_ls7wTHIGplPbJl7qec0bZ6vCpzVOELFPxDF2j_Jjm1IH-0W22pk3aO_3yJ8VFLQdfgq5CK9xI4l&amp;fife=w1000-h1000" alt="The Rise of the Dragon" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=nJyTEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Rise of the Dragon</a></h3>
+        <p class="book-subtitle">An Illustrated History of the Targaryen Dynasty, Volume One</p>
+        <p class="book-author">Linda Antonsson, Elio M. García Jr., George R. R. Martin</p>
+        <p class="book-meta">352 pp · Hardcover</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/23704853482799.jpg" alt="The Rust Programming Language, 2nd Edition" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">The Rust Programming Language, 2nd Edition</h3>
+        <p class="book-author">Steve Klabnik, Carol Nichols</p>
+        <p class="book-meta">560 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">Languages</span>
+          <span class="tag">Object Oriented</span>
+          <span class="tag">Open Source</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=VIjBoQEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72shr9V2WF4JdpWRSWylc0Khs8hvH614qVQ9KceLpT9he6UUuKos1DaEk3OHe0C3QfW2AZ0-re_T5-XBWBzg10PNLS7fOzwmZGM6BCGpIouUb_G-w21nPjePf1qdi4-kjuoeSNs&amp;fife=w1000-h1000" alt="The Senior Software Engineer" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=VIjBoQEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Senior Software Engineer</a></h3>
+        <p class="book-subtitle">11 Practices of an Effective Technical Leader</p>
+        <p class="book-author">David Bryant Copeland</p>
+        <p class="book-meta">252 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Computers</span>
+          <span class="tag">General</span>
+          <span class="tag">Technology &amp; Engineering</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/content?id=LETytAEACAAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72ZIsMVM5PaWiRkRJoFCqHpbZsyiv8iCPsMPS2k4GXZLCXkKTDgfmL9pGKwB1BNyvWXaf0jgao4uYqy3EQeCWCJa557etbRHNMmljMf5BzFTaVh32NiPCMGenhdaYP_u82abKRq&amp;fife=w1000-h1000" alt="The Site Reliability Workbook" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=LETytAEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Site Reliability Workbook</a></h3>
+        <p class="book-subtitle">Practical Ways to Implement SRE</p>
+        <p class="book-author">Betsy Beyer, Kent Kawahara, Niall Richard Murphy, David K. Rensin, Stephen Thorne</p>
+        <p class="book-meta">474 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Cloud Computing</span>
+          <span class="tag">Computer Science</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Distributed Systems</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=ibu-EAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE71OWPFXxC9BqyZfxr07fiPgMij4aS31A7IjygcMJFy3CmyX33wJL1q7GulHCrOaa5m_j844wcfZ5BYr6NnZiG6e2u8Vqz2lI1fGUhxByU4RoIul-GQSDTUCi0sm6ZfDVm-r2jb0&amp;fife=w1000-h1000" alt="The Stormlight Archive, Books 1-4" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=ibu-EAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Stormlight Archive, Books 1-4</a></h3>
+        <p class="book-subtitle">The Way of Kings, Words of Radiance, Oathbringer, Rhythm of War</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">4432 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Action &amp; Adventure</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/7599453482281.jpg" alt="Understanding Deep Learning" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">Understanding Deep Learning</h3>
+        <p class="book-author">Simon J.D. Prince</p>
+        <p class="book-meta">544 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Artificial Intelligence</span>
+          <span class="tag">Computers</span>
+          <span class="tag">Data Science</span>
+          <span class="tag">Machine Learning</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="https://images.isbndb.com/covers/20453973482355.jpg" alt="UNIX Shell Programming" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title">UNIX Shell Programming</h3>
+        <p class="book-author">Lowell Jay Arthur, Ted Burns</p>
+        <p class="book-meta">528 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">UNIX (Computer file)</span>
+          <span class="tag">UNIX Shells.</span>
+        </div>
+      </div>
+    </div>
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=DSmcEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE72nHsrjKYNnFNRrJ6yDSH7_Buz65lPHG6GKBnl8CjGDC59Q8QrYfuUu2cjcprw-mr5hvEqpK-eNPWejRPnwuTHE1W8tKGSB9y44ew8NXZIE0fFYokRR-Xi3XKm8cKqzrVq-qLgj&amp;fife=w1000-h1000" alt="Yumi and the Nightmare Painter" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=DSmcEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Yumi and the Nightmare Painter</a></h3>
+        <p class="book-subtitle">A Cosmere Novel</p>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">384 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+          <span class="tag">Romance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="book-section">
+  <h2>🚫 Did Not Finish <span class="count">(1)</span></h2>
+  <div class="book-grid">
+    <div class="book-card">
+      <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=6uv-CwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70kyI7F_j2KK8q7TyID4OFJNgT-Cfx0XVoazxZFqLxJxjXb1aHMZsNqGKu0g2ByksmafDkEe4OP-i_rI3uT0qROgo_TS6Q15QcY-3SCPF_4TmGFeT7IDmreTZ6ov2BvDIYzFqkx&amp;fife=w1000-h1000" alt="Arcanum Unbounded: The Cosmere Collection" loading="lazy"></div>
+      <div class="book-info">
+        <h3 class="book-title"><a href="http://books.google.ca/books?id=6uv-CwAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Arcanum Unbounded: The Cosmere Collection</a></h3>
+        <p class="book-author">Brandon Sanderson</p>
+        <p class="book-meta">671 pp · Paperback</p>
+        <div class="book-tags">
+          <span class="tag">Collections &amp; Anthologies</span>
+          <span class="tag">Epic</span>
+          <span class="tag">Fantasy</span>
+          <span class="tag">Fiction</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Generated on 2026-08-28</p>
+</footer>
+</body>
+</html>
