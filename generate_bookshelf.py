@@ -105,29 +105,114 @@ def compute_stats(books):
 
     total_pages = 0
     durations = []
+    pages_with_duration = 0
+    total_duration_days = 0
     years = defaultdict(int)
     for b in read_books:
         pages = b.get("pages", "")
+        d = reading_duration(b.get("startReading", ""), b.get("endReading", ""))
+        pages_int = 0
         if pages:
             try:
-                total_pages += int(pages)
+                pages_int = int(pages)
+                total_pages += pages_int
             except ValueError:
                 pass
-        d = reading_duration(b.get("startReading", ""), b.get("endReading", ""))
         if d is not None:
             durations.append(d)
+            if pages_int > 0:
+                pages_with_duration += pages_int
+                total_duration_days += d
         end = b.get("endReading", "")
         if end:
             years[end[:4]] += 1
 
     stats["total_pages"] = total_pages
     stats["avg_duration"] = round(sum(durations) / len(durations), 1) if durations else 0
+    stats["avg_pages_per_day"] = round(pages_with_duration / total_duration_days, 1) if total_duration_days > 0 else 0
     stats["books_by_year"] = dict(sorted(years.items(), reverse=True))
     return stats
 
 
 def escape(text):
     return html.escape(text or "", quote=True)
+
+
+def render_book_card(w, b, status, avg_pages_per_day=0):
+    title = escape(b.get("title", ""))
+    subtitle = escape(b.get("subtitle", ""))
+    author = escape(format_author(b.get("authors", "")))
+    cover = b.get("thumbnailRemoteImageUrl", "") or b.get("remoteImageUrl", "")
+    pages = b.get("pages", "")
+    series = escape(b.get("series", ""))
+    series_num = escape(b.get("seriesNumber", ""))
+    start = b.get("startReading", "")
+    end = b.get("endReading", "")
+    categories = b.get("categories", "")
+    book_type = b.get("types", "")
+    link = b.get("externalLink", "")
+
+    duration = reading_duration(start, end)
+
+    w(f"    <div class=\"book-card\">\n")
+
+    if cover:
+        w(f"      <div class=\"book-cover\"><img src=\"{escape(cover)}\" alt=\"{title}\" loading=\"lazy\"></div>\n")
+    else:
+        w(f"      <div class=\"book-cover no-cover\"><span>{title[:2].upper()}</span></div>\n")
+
+    w(f"      <div class=\"book-info\">\n")
+
+    if link:
+        w(f"        <h3 class=\"book-title\"><a href=\"{escape(link)}\" rel=\"noopener\">{title}</a></h3>\n")
+    else:
+        w(f"        <h3 class=\"book-title\">{title}</h3>\n")
+
+    if subtitle:
+        w(f"        <p class=\"book-subtitle\">{subtitle}</p>\n")
+
+    if author:
+        w(f"        <p class=\"book-author\">{author}</p>\n")
+
+    meta_parts = []
+    if pages:
+        meta_parts.append(f"{pages} pp")
+    if series:
+        s = series
+        if series_num:
+            s += f" #{series_num}"
+        meta_parts.append(s)
+    if book_type:
+        type_display = book_type.replace(";", ", ").replace("_", " ").title()
+        meta_parts.append(type_display)
+    if meta_parts:
+        w(f"        <p class=\"book-meta\">{' · '.join(meta_parts)}</p>\n")
+
+    if status == "read" and end:
+        date_str = f"Finished {end}"
+        if duration:
+            date_str += f" ({duration} day{'s' if duration != 1 else ''})"
+        w(f"        <p class=\"book-dates\">{date_str}</p>\n")
+    elif status == "reading" and start:
+        w(f"        <p class=\"book-dates\">Started {start}</p>\n")
+    elif status == "unread" and pages and avg_pages_per_day > 0:
+        try:
+            est_days = round(int(pages) / avg_pages_per_day)
+            est_days = max(est_days, 1)
+            w(f"        <p class=\"book-dates\">Est. ~{est_days} day{'s' if est_days != 1 else ''} to read</p>\n")
+        except ValueError:
+            pass
+
+    if categories:
+        cats = [c.strip() for c in categories.split(";") if c.strip()]
+        if cats:
+            w(f"        <div class=\"book-tags\">\n")
+            for cat in cats[:4]:
+                w(f"          <span class=\"tag\">{escape(cat)}</span>\n")
+            w(f"        </div>\n")
+
+    w(f"      </div>\n")
+    w(f"    </div>\n")
 
 
 def generate_html(books, stats):
@@ -165,11 +250,12 @@ def generate_html(books, stats):
 
     # Stats bar
     w("<section class=\"stats\">\n")
-    w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['read']}</span><span class=\"stat-label\">Read</span></div>\n")
-    w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['reading']}</span><span class=\"stat-label\">Reading</span></div>\n")
-    w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['unread']}</span><span class=\"stat-label\">To Read</span></div>\n")
+    w(f"  <a href=\"#section-reading\" class=\"stat\"><span class=\"stat-num\">{stats['reading']}</span><span class=\"stat-label\">Reading</span></a>\n")
+    w(f"  <a href=\"#section-read\" class=\"stat\"><span class=\"stat-num\">{stats['read']}</span><span class=\"stat-label\">Read</span></a>\n")
+    w(f"  <a href=\"#section-unread\" class=\"stat\"><span class=\"stat-num\">{stats['unread']}</span><span class=\"stat-label\">To Read</span></a>\n")
     w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['total_pages']:,}</span><span class=\"stat-label\">Pages Read</span></div>\n")
     w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['avg_duration']}</span><span class=\"stat-label\">Avg Days/Book</span></div>\n")
+    w(f"  <div class=\"stat\"><span class=\"stat-num\">{stats['avg_pages_per_day']}</span><span class=\"stat-label\">Avg Pages/Day</span></div>\n")
     w("</section>\n\n")
 
     # Year breakdown
@@ -180,91 +266,38 @@ def generate_html(books, stats):
         w("</section>\n\n")
 
     # Book sections
+    avg_ppd = stats.get("avg_pages_per_day", 0)
     for status in STATUS_ORDER:
         section_books = grouped.get(status, [])
         if not section_books:
             continue
         label = STATUS_LABELS.get(status, status)
         emoji = STATUS_EMOJI.get(status, "")
-        w(f"<section class=\"book-section\">\n")
+        w(f"<section class=\"book-section\" id=\"section-{status}\">\n")
         w(f"  <h2>{emoji} {label} <span class=\"count\">({len(section_books)})</span></h2>\n")
-        w(f"  <div class=\"book-grid\">\n")
 
-        for b in section_books:
-            title = escape(b.get("title", ""))
-            subtitle = escape(b.get("subtitle", ""))
-            author = escape(format_author(b.get("authors", "")))
-            cover = b.get("thumbnailRemoteImageUrl", "") or b.get("remoteImageUrl", "")
-            pages = b.get("pages", "")
-            series = escape(b.get("series", ""))
-            series_num = escape(b.get("seriesNumber", ""))
-            start = b.get("startReading", "")
-            end = b.get("endReading", "")
-            categories = b.get("categories", "")
-            book_type = b.get("types", "")
-            link = b.get("externalLink", "")
+        if status == "read":
+            year_groups = defaultdict(list)
+            for b in section_books:
+                end = b.get("endReading", "")
+                year = end[:4] if end else ""
+                year_groups[year].append(b)
+            sorted_years = sorted([y for y in year_groups if y], reverse=True)
+            if "" in year_groups:
+                sorted_years.append("")
+            for year in sorted_years:
+                year_label = year if year else "Unknown"
+                w(f"  <h3 class=\"year-heading\">{year_label} <span class=\"count\">({len(year_groups[year])})</span></h3>\n")
+                w(f"  <div class=\"book-grid\">\n")
+                for b in year_groups[year]:
+                    render_book_card(w, b, status)
+                w(f"  </div>\n")
+        else:
+            w(f"  <div class=\"book-grid\">\n")
+            for b in section_books:
+                render_book_card(w, b, status, avg_ppd)
+            w(f"  </div>\n")
 
-            duration = reading_duration(start, end)
-
-            w(f"    <div class=\"book-card\">\n")
-
-            # Cover
-            if cover:
-                w(f"      <div class=\"book-cover\"><img src=\"{escape(cover)}\" alt=\"{title}\" loading=\"lazy\"></div>\n")
-            else:
-                w(f"      <div class=\"book-cover no-cover\"><span>{title[:2].upper()}</span></div>\n")
-
-            w(f"      <div class=\"book-info\">\n")
-
-            # Title
-            if link:
-                w(f"        <h3 class=\"book-title\"><a href=\"{escape(link)}\" rel=\"noopener\">{title}</a></h3>\n")
-            else:
-                w(f"        <h3 class=\"book-title\">{title}</h3>\n")
-
-            if subtitle:
-                w(f"        <p class=\"book-subtitle\">{subtitle}</p>\n")
-
-            if author:
-                w(f"        <p class=\"book-author\">{author}</p>\n")
-
-            # Meta line
-            meta_parts = []
-            if pages:
-                meta_parts.append(f"{pages} pp")
-            if series:
-                s = series
-                if series_num:
-                    s += f" #{series_num}"
-                meta_parts.append(s)
-            if book_type:
-                type_display = book_type.replace(";", ", ").replace("_", " ").title()
-                meta_parts.append(type_display)
-            if meta_parts:
-                w(f"        <p class=\"book-meta\">{' · '.join(meta_parts)}</p>\n")
-
-            # Dates
-            if status == "read" and end:
-                date_str = f"Finished {end}"
-                if duration:
-                    date_str += f" ({duration} day{'s' if duration != 1 else ''})"
-                w(f"        <p class=\"book-dates\">{date_str}</p>\n")
-            elif status == "reading" and start:
-                w(f"        <p class=\"book-dates\">Started {start}</p>\n")
-
-            # Categories as small tags
-            if categories:
-                cats = [c.strip() for c in categories.split(";") if c.strip()]
-                if cats:
-                    w(f"        <div class=\"book-tags\">\n")
-                    for cat in cats[:4]:  # limit to 4 tags
-                        w(f"          <span class=\"tag\">{escape(cat)}</span>\n")
-                    w(f"        </div>\n")
-
-            w(f"      </div>\n")  # book-info
-            w(f"    </div>\n")  # book-card
-
-        w(f"  </div>\n")  # book-grid
         w(f"</section>\n\n")
 
     # Footer
@@ -342,6 +375,8 @@ header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
 }
 .stat-num { font-size: 1.5rem; font-weight: 700; }
 .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+a.stat { color: inherit; text-decoration: none; }
+a.stat:hover { opacity: 0.7; }
 
 /* Year chips */
 .year-bar {
@@ -368,6 +403,8 @@ header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
   padding-bottom: 0.5rem;
 }
 .book-section h2 .count { color: var(--muted); font-weight: 400; }
+.year-heading { font-size: 0.95rem; font-weight: 600; color: var(--muted); margin-top: 1rem; margin-bottom: 0.5rem; }
+.year-heading .count { font-weight: 400; }
 
 /* Grid */
 .book-grid {
