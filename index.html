@@ -70,6 +70,8 @@ header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
 }
 .stat-num { font-size: 1.5rem; font-weight: 700; }
 .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+a.stat { color: inherit; text-decoration: none; }
+a.stat:hover { opacity: 0.7; }
 
 /* Year chips */
 .year-bar {
@@ -96,6 +98,8 @@ header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
   padding-bottom: 0.5rem;
 }
 .book-section h2 .count { color: var(--muted); font-weight: 400; }
+.year-heading { font-size: 0.95rem; font-weight: 600; color: var(--muted); margin-top: 1rem; margin-bottom: 0.5rem; }
+.year-heading .count { font-weight: 400; }
 
 /* Grid */
 .book-grid {
@@ -191,11 +195,12 @@ footer {
 </header>
 
 <section class="stats">
-  <div class="stat"><span class="stat-num">50</span><span class="stat-label">Read</span></div>
-  <div class="stat"><span class="stat-num">4</span><span class="stat-label">Reading</span></div>
-  <div class="stat"><span class="stat-num">53</span><span class="stat-label">To Read</span></div>
+  <a href="#section-reading" class="stat"><span class="stat-num">4</span><span class="stat-label">Reading</span></a>
+  <a href="#section-read" class="stat"><span class="stat-num">50</span><span class="stat-label">Read</span></a>
+  <a href="#section-unread" class="stat"><span class="stat-num">53</span><span class="stat-label">To Read</span></a>
   <div class="stat"><span class="stat-num">21,192</span><span class="stat-label">Pages Read</span></div>
   <div class="stat"><span class="stat-num">10.7</span><span class="stat-label">Avg Days/Book</span></div>
+  <div class="stat"><span class="stat-num">34.9</span><span class="stat-label">Avg Pages/Day</span></div>
 </section>
 
 <section class="year-bar">
@@ -203,7 +208,7 @@ footer {
   <span class="year-chip">2025: 21 books</span>
 </section>
 
-<section class="book-section">
+<section class="book-section" id="section-reading">
   <h2>📖 Currently Reading <span class="count">(4)</span></h2>
   <div class="book-grid">
     <div class="book-card">
@@ -266,8 +271,9 @@ footer {
   </div>
 </section>
 
-<section class="book-section">
+<section class="book-section" id="section-read">
   <h2>✅ Read <span class="count">(50)</span></h2>
+  <h3 class="year-heading">2026 <span class="count">(20)</span></h3>
   <div class="book-grid">
     <div class="book-card">
       <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=oTU0DwAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE723q9BjBoy_6rlpL2pFUgq2fowficXH7hJ0o1-MAeZp6UYCiBCJ_vInkLX3sMvW_FwqaRCTufaCgS-ifAoJMxDCBQyJbyigS-sifBxk3TS3DPdduNEMzTa0zlyxdMeCMCwymZOc&amp;fife=w1000-h1000" alt="Artificial Condition" loading="lazy"></div>
@@ -572,6 +578,9 @@ footer {
         </div>
       </div>
     </div>
+  </div>
+  <h3 class="year-heading">2025 <span class="count">(21)</span></h3>
+  <div class="book-grid">
     <div class="book-card">
       <div class="book-cover no-cover"><span>CA</span></div>
       <div class="book-info">
@@ -885,6 +894,9 @@ footer {
         </div>
       </div>
     </div>
+  </div>
+  <h3 class="year-heading">Unknown <span class="count">(9)</span></h3>
+  <div class="book-grid">
     <div class="book-card">
       <div class="book-cover"><img src="http://books.google.com/books/publisher/content?id=fQKNEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;imgtk=AFLRE70Ww1QHUpo3kUH4Vq4cjXUl24vDJYINX1t9waoS-NV9YJ-efLve1WJK4EGMBHlm561fOQcxu_v5bzuxGvIRtst8YAC9c7__NqGLKqBojFRD7HB2uTHD9_SgJm-xR8EN3DWq0qQx&amp;fife=w1000-h1000" alt="A Clash of Kings" loading="lazy"></div>
       <div class="book-info">
@@ -1018,7 +1030,7 @@ footer {
   </div>
 </section>
 
-<section class="book-section">
+<section class="book-section" id="section-unread">
   <h2>📋 To Read <span class="count">(53)</span></h2>
   <div class="book-grid">
     <div class="book-card">
@@ -1027,6 +1039,7 @@ footer {
         <h3 class="book-title">A Psalm for the Wild-Built A Monk and Robot Book</h3>
         <p class="book-author">Becky Chambers</p>
         <p class="book-meta">160 pp · Ebook</p>
+        <p class="book-dates">Est. ~5 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Apocalyptic &amp; Post-Apocalyptic</span>
@@ -1041,6 +1054,7 @@ footer {
         <h3 class="book-title">Age of Ash</h3>
         <p class="book-author">Daniel Abraham</p>
         <p class="book-meta">448 pp · Paperback</p>
+        <p class="book-dates">Est. ~13 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Dark Fantasy</span>
@@ -1056,6 +1070,7 @@ footer {
         <p class="book-subtitle">Systems of Engineering Management</p>
         <p class="book-author">Will Larson</p>
         <p class="book-meta">288 pp · Paperback</p>
+        <p class="book-dates">Est. ~8 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Economics</span>
           <span class="tag">Computers</span>
@@ -1071,6 +1086,7 @@ footer {
         <p class="book-subtitle">A Novel</p>
         <p class="book-author">Andy Weir</p>
         <p class="book-meta">352 pp · Paperback</p>
+        <p class="book-dates">Est. ~10 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Fiction</span>
@@ -1086,6 +1102,7 @@ footer {
         <p class="book-subtitle">An Easy &amp; Proven Way to Build Good Habits &amp; Break Bad Ones</p>
         <p class="book-author">James Clear</p>
         <p class="book-meta">320 pp · Paperback</p>
+        <p class="book-dates">Est. ~9 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Economics</span>
           <span class="tag">General</span>
@@ -1100,6 +1117,7 @@ footer {
         <h3 class="book-title">Blood Over Bright Haven</h3>
         <p class="book-author">M. L. Wang</p>
         <p class="book-meta">517 pp · Hardcover</p>
+        <p class="book-dates">Est. ~15 days to read</p>
         <div class="book-tags">
           <span class="tag">Fantasy</span>
           <span class="tag">Gaslamp</span>
@@ -1115,6 +1133,7 @@ footer {
         <p class="book-subtitle">Designing Fine-grained Systems</p>
         <p class="book-author">Sam Newman</p>
         <p class="book-meta">586 pp · Paperback</p>
+        <p class="book-dates">Est. ~17 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Productivity Software</span>
           <span class="tag">Computer Architecture</span>
@@ -1130,6 +1149,7 @@ footer {
         <p class="book-subtitle">Develop Next-Level CLIs to Improve User Experience, Increase Platform Usage, and Maximize Production</p>
         <p class="book-author">Marian Montagnino</p>
         <p class="book-meta">406 pp · Paperback</p>
+        <p class="book-dates">Est. ~12 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Productivity Software</span>
           <span class="tag">Computers</span>
@@ -1144,6 +1164,7 @@ footer {
         <h3 class="book-title">CIRCE</h3>
         <p class="book-author">Madeline Miller</p>
         <p class="book-meta">416 pp · Paperback</p>
+        <p class="book-dates">Est. ~12 days to read</p>
         <div class="book-tags">
           <span class="tag">Ancient</span>
           <span class="tag">Classics</span>
@@ -1159,6 +1180,7 @@ footer {
         <p class="book-subtitle">Designing and Operating Resilient Database Systems</p>
         <p class="book-author">Laine Campbell, Charity Majors</p>
         <p class="book-meta">271 pp · Paperback</p>
+        <p class="book-dates">Est. ~8 days to read</p>
         <div class="book-tags">
           <span class="tag">Computer Science</span>
           <span class="tag">Computers</span>
@@ -1174,6 +1196,7 @@ footer {
         <p class="book-subtitle">Rules for Focused Success in a Distracted World</p>
         <p class="book-author">Cal Newport</p>
         <p class="book-meta">288 pp · Paperback</p>
+        <p class="book-dates">Est. ~8 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Economics</span>
           <span class="tag">Personal Growth</span>
@@ -1188,6 +1211,7 @@ footer {
         <h3 class="book-title"><a href="http://books.google.ca/books?id=JY4OEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Elder Race</a></h3>
         <p class="book-author">Adrian Tchaikovsky</p>
         <p class="book-meta">176 pp · Paperback</p>
+        <p class="book-dates">Est. ~5 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Alien Contact</span>
@@ -1203,6 +1227,7 @@ footer {
         <p class="book-subtitle">The Sun Eater: Book One</p>
         <p class="book-author">Christopher Ruocchio</p>
         <p class="book-meta">624 pp · Paperback</p>
+        <p class="book-dates">Est. ~18 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Alien Contact</span>
@@ -1226,6 +1251,7 @@ footer {
         <p class="book-subtitle">300 Years Before A Game of Thrones</p>
         <p class="book-author">George R. R. Martin</p>
         <p class="book-meta">736 pp · Paperback</p>
+        <p class="book-dates">Est. ~21 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Dragons &amp; Mythical Creatures</span>
@@ -1240,6 +1266,7 @@ footer {
         <h3 class="book-title"><a href="http://books.google.ca/books?id=TPxl0AEACAAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Game of Thrones: a to Z Guide and Trivia Deck</a></h3>
         <p class="book-author">Jim McDermott</p>
         <p class="book-meta">88 pp · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Antiques &amp; Collectibles</span>
           <span class="tag">Games &amp; Activities</span>
@@ -1255,6 +1282,7 @@ footer {
         <p class="book-subtitle">A Practical Guide to SLIs, SLOs, and Error Budgets</p>
         <p class="book-author">Alex Hidalgo</p>
         <p class="book-meta">375 pp · Paperback</p>
+        <p class="book-dates">Est. ~11 days to read</p>
         <div class="book-tags">
           <span class="tag">Backup &amp; Recovery</span>
           <span class="tag">Business &amp; Economics</span>
@@ -1270,6 +1298,7 @@ footer {
         <p class="book-subtitle">Software Architecture</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">112 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1284,6 +1313,7 @@ footer {
         <p class="book-subtitle">Frontend</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">120 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1298,6 +1328,7 @@ footer {
         <p class="book-subtitle">APIs</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">96 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1312,6 +1343,7 @@ footer {
         <p class="book-subtitle">Remote</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">104 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1352,6 +1384,7 @@ footer {
         <p class="book-subtitle">Mobile</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">104 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1380,6 +1413,7 @@ footer {
         <p class="book-subtitle">Internationalization</p>
         <p class="book-author">Sid Orlando</p>
         <p class="book-meta">98 pp · Increment by Stripe · Paperback</p>
+        <p class="book-dates">Est. ~3 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1393,6 +1427,7 @@ footer {
         <h3 class="book-title">Inverting the Pyramid The History of Soccer Tactics</h3>
         <p class="book-author">Jonathan Wilson</p>
         <p class="book-meta">528 pp · Paperback</p>
+        <p class="book-dates">Est. ~15 days to read</p>
         <div class="book-tags">
           <span class="tag">Coaching</span>
           <span class="tag">History</span>
@@ -1408,6 +1443,7 @@ footer {
         <p class="book-subtitle">The Autobiography of Nelson Mandela</p>
         <p class="book-author">Nelson Mandela</p>
         <p class="book-meta">656 pp · Paperback</p>
+        <p class="book-dates">Est. ~19 days to read</p>
         <div class="book-tags">
           <span class="tag">Africa</span>
           <span class="tag">Biography &amp; Autobiography</span>
@@ -1423,6 +1459,7 @@ footer {
         <p class="book-subtitle">Alloy of Law, Shadows of Self, Bands of Mourning, The Lost Metal</p>
         <p class="book-author">Brandon Sanderson</p>
         <p class="book-meta">1472 pp · Paperback</p>
+        <p class="book-dates">Est. ~42 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Epic</span>
@@ -1438,6 +1475,7 @@ footer {
         <p class="book-subtitle">A Novel</p>
         <p class="book-author">Robin Sloan</p>
         <p class="book-meta">432 pp · Paperback</p>
+        <p class="book-dates">Est. ~12 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Epic</span>
@@ -1453,6 +1491,7 @@ footer {
         <p class="book-subtitle">The New Nordic Cuisine of Iceland [A Cookbook]</p>
         <p class="book-author">Jody Eddy, Gunnar Karl Gíslason</p>
         <p class="book-meta">352 pp · Paperback</p>
+        <p class="book-dates">Est. ~10 days to read</p>
         <div class="book-tags">
           <span class="tag">Cooking</span>
           <span class="tag">Europe</span>
@@ -1468,6 +1507,7 @@ footer {
         <p class="book-subtitle">Productive Projects and Teams</p>
         <p class="book-author">Tom DeMarco, Tim Lister</p>
         <p class="book-meta">272 pp · Paperback</p>
+        <p class="book-dates">Est. ~8 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1481,6 +1521,7 @@ footer {
         <h3 class="book-title"><a href="http://books.google.ca/books?id=1bMyEAAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">Piranesi</a></h3>
         <p class="book-author">Susanna Clarke</p>
         <p class="book-meta">245 pp · Paperback</p>
+        <p class="book-dates">Est. ~7 days to read</p>
         <div class="book-tags">
           <span class="tag">Dark Fantasy</span>
           <span class="tag">Fantasy</span>
@@ -1495,6 +1536,7 @@ footer {
         <p class="book-subtitle">Build Fast and Maintainable Tools</p>
         <p class="book-author">Ricardo Gerardi</p>
         <p class="book-meta">475 pp · Paperback</p>
+        <p class="book-dates">Est. ~14 days to read</p>
         <div class="book-tags">
           <span class="tag">Computer Science</span>
           <span class="tag">Computers</span>
@@ -1510,6 +1552,7 @@ footer {
         <p class="book-subtitle">Iceland Revealed</p>
         <p class="book-author">Ari Trausti Gundmundsson, Feodor Pitcairn</p>
         <p class="book-meta">256 pp · Paperback</p>
+        <p class="book-dates">Est. ~7 days to read</p>
         <div class="book-tags">
           <span class="tag">General</span>
           <span class="tag">Photography</span>
@@ -1524,6 +1567,7 @@ footer {
         <p class="book-subtitle">Security in the Cloud</p>
         <p class="book-author">Julien Vehent</p>
         <p class="book-meta">384 pp · Paperback</p>
+        <p class="book-dates">Est. ~11 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1539,6 +1583,7 @@ footer {
         <p class="book-subtitle">Conversations about Running Production Systems at Scale</p>
         <p class="book-author">David N. Blank-Edelman</p>
         <p class="book-meta">576 pp · Paperback</p>
+        <p class="book-dates">Est. ~17 days to read</p>
         <div class="book-tags">
           <span class="tag">Backup &amp; Recovery</span>
           <span class="tag">Computer Science</span>
@@ -1554,6 +1599,7 @@ footer {
         <p class="book-subtitle">How Google Runs Production Systems</p>
         <p class="book-author">Betsy Beyer, Chris Jones, Niall Richard Murphy, Jennifer Petoff</p>
         <p class="book-meta">524 pp · Paperback</p>
+        <p class="book-dates">Est. ~15 days to read</p>
         <div class="book-tags">
           <span class="tag">Backup &amp; Recovery</span>
           <span class="tag">Computer Science</span>
@@ -1569,6 +1615,7 @@ footer {
         <p class="book-subtitle">Leadership Beyond the Management Track</p>
         <p class="book-author">Will Larson (Software engineer)</p>
         <p class="book-meta">370 pp · Paperback</p>
+        <p class="book-dates">Est. ~11 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1582,6 +1629,7 @@ footer {
         <p class="book-subtitle">Scaling Web Resources in the Cloud</p>
         <p class="book-author">John Allspaw, Arun Kejariwal</p>
         <p class="book-meta">217 pp · Paperback</p>
+        <p class="book-dates">Est. ~6 days to read</p>
         <div class="book-tags">
           <span class="tag">Backup &amp; Recovery</span>
           <span class="tag">Computer Literacy</span>
@@ -1597,6 +1645,7 @@ footer {
         <p class="book-subtitle">A Novel of King Arthur</p>
         <p class="book-author">Lev Grossman</p>
         <p class="book-meta">688 pp · Paperback</p>
+        <p class="book-dates">Est. ~20 days to read</p>
         <div class="book-tags">
           <span class="tag">Epic</span>
           <span class="tag">Fantasy</span>
@@ -1611,6 +1660,7 @@ footer {
         <h3 class="book-title">The Design of Everyday Things</h3>
         <p class="book-author">Donald A. Norman</p>
         <p class="book-meta">288 pp · Paperback</p>
+        <p class="book-dates">Est. ~8 days to read</p>
         <div class="book-tags">
           <span class="tag">Design, Industrial -- Psychological aspects</span>
           <span class="tag">Human engineering</span>
@@ -1623,6 +1673,7 @@ footer {
         <h3 class="book-title"><a href="http://books.google.ca/books?id=0rhmEQAAQBAJ&amp;hl=&amp;source=gbs_api" rel="noopener">The Dungeon Anarchist&#x27;s Cookbook</a></h3>
         <p class="book-author">Matt Dinniman</p>
         <p class="book-meta">784 pp · Paperback</p>
+        <p class="book-dates">Est. ~22 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Fantasy</span>
@@ -1637,6 +1688,7 @@ footer {
         <h3 class="book-title">The Iron Garden Sutra</h3>
         <p class="book-author">A.D. Sui</p>
         <p class="book-meta">384 pp · Paperback</p>
+        <p class="book-dates">Est. ~11 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Fiction</span>
@@ -1652,6 +1704,7 @@ footer {
         <p class="book-subtitle">A Guide for Tech Leaders Navigating Growth and Change</p>
         <p class="book-author">Camille Fournier</p>
         <p class="book-meta">226 pp · Paperback</p>
+        <p class="book-dates">Est. ~6 days to read</p>
         <div class="book-tags">
           <span class="tag">Business &amp; Economics</span>
           <span class="tag">Computer Science</span>
@@ -1667,6 +1720,7 @@ footer {
         <p class="book-subtitle">An Illustrated History of the Targaryen Dynasty, Volume One</p>
         <p class="book-author">Linda Antonsson, Elio M. García Jr., George R. R. Martin</p>
         <p class="book-meta">352 pp · Hardcover</p>
+        <p class="book-dates">Est. ~10 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Epic</span>
@@ -1681,6 +1735,7 @@ footer {
         <h3 class="book-title">The Rust Programming Language, 2nd Edition</h3>
         <p class="book-author">Steve Klabnik, Carol Nichols</p>
         <p class="book-meta">560 pp · Paperback</p>
+        <p class="book-dates">Est. ~16 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">Languages</span>
@@ -1696,6 +1751,7 @@ footer {
         <p class="book-subtitle">11 Practices of an Effective Technical Leader</p>
         <p class="book-author">David Bryant Copeland</p>
         <p class="book-meta">252 pp · Paperback</p>
+        <p class="book-dates">Est. ~7 days to read</p>
         <div class="book-tags">
           <span class="tag">Computers</span>
           <span class="tag">General</span>
@@ -1710,6 +1766,7 @@ footer {
         <p class="book-subtitle">Practical Ways to Implement SRE</p>
         <p class="book-author">Betsy Beyer, Kent Kawahara, Niall Richard Murphy, David K. Rensin, Stephen Thorne</p>
         <p class="book-meta">474 pp · Paperback</p>
+        <p class="book-dates">Est. ~14 days to read</p>
         <div class="book-tags">
           <span class="tag">Cloud Computing</span>
           <span class="tag">Computer Science</span>
@@ -1725,6 +1782,7 @@ footer {
         <p class="book-subtitle">The Way of Kings, Words of Radiance, Oathbringer, Rhythm of War</p>
         <p class="book-author">Brandon Sanderson</p>
         <p class="book-meta">4432 pp · Paperback</p>
+        <p class="book-dates">Est. ~127 days to read</p>
         <div class="book-tags">
           <span class="tag">Action &amp; Adventure</span>
           <span class="tag">Epic</span>
@@ -1739,6 +1797,7 @@ footer {
         <h3 class="book-title">Understanding Deep Learning</h3>
         <p class="book-author">Simon J.D. Prince</p>
         <p class="book-meta">544 pp · Paperback</p>
+        <p class="book-dates">Est. ~16 days to read</p>
         <div class="book-tags">
           <span class="tag">Artificial Intelligence</span>
           <span class="tag">Computers</span>
@@ -1753,6 +1812,7 @@ footer {
         <h3 class="book-title">UNIX Shell Programming</h3>
         <p class="book-author">Lowell Jay Arthur, Ted Burns</p>
         <p class="book-meta">528 pp · Paperback</p>
+        <p class="book-dates">Est. ~15 days to read</p>
         <div class="book-tags">
           <span class="tag">UNIX (Computer file)</span>
           <span class="tag">UNIX Shells.</span>
@@ -1766,6 +1826,7 @@ footer {
         <p class="book-subtitle">A Cosmere Novel</p>
         <p class="book-author">Brandon Sanderson</p>
         <p class="book-meta">384 pp · Paperback</p>
+        <p class="book-dates">Est. ~11 days to read</p>
         <div class="book-tags">
           <span class="tag">Epic</span>
           <span class="tag">Fantasy</span>
@@ -1777,7 +1838,7 @@ footer {
   </div>
 </section>
 
-<section class="book-section">
+<section class="book-section" id="section-dnf">
   <h2>🚫 Did Not Finish <span class="count">(1)</span></h2>
   <div class="book-grid">
     <div class="book-card">
@@ -1798,7 +1859,7 @@ footer {
 </section>
 
 <footer>
-  <p>Generated on 2026-08-28</p>
+  <p>Generated on 2026-08-29</p>
 </footer>
 </body>
 </html>
