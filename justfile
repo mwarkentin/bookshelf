@@ -12,8 +12,10 @@ copy:
 build:
     uv run generate_bookshelf.py "{{csv}}" -o index.html
 
-# Commit the updated index.html
+# Switch to main, pull latest, and commit the updated index.html
 commit:
+    git checkout main
+    git pull origin main
     git add index.html
     git commit -m "Update bookshelf"
 
